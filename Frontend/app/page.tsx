@@ -1,65 +1,57 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-screen flex-col bg-white text-zinc-900 selection:bg-blue-100">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 sm:px-12">
+        <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          CalendlyClone
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <nav className="flex items-center gap-4 text-sm font-medium">
+          <Link href="/login" className="hover:text-blue-600 transition-colors">
+            Log In
+          </Link>
+          <Link href="/signup" className="hidden sm:inline-flex bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">
+            Get Started
+          </Link>
+        </nav>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center sm:px-12">
+        <h1 className="max-w-4xl text-5xl font-extrabold tracking-tight text-zinc-900 sm:text-7xl mb-6">
+          Easy scheduling <span className="text-blue-600">ahead</span>
+        </h1>
+        <p className="max-w-2xl text-lg sm:text-xl leading-relaxed text-zinc-600 mb-10">
+          CalendlyClone is your scheduling automation platform for eliminating the back-and-forth emails to find the perfect time — and so much more.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md">
+          <div className="flex w-full items-center bg-white border-2 border-zinc-200 rounded-lg p-1 focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+            <span className="pl-4 pr-1 text-zinc-500 font-medium">calendly.com/</span>
+            <input 
+              type="text" 
+              placeholder="yourlink"
+              className="flex-1 bg-transparent py-3 pr-4 outline-none placeholder:text-zinc-400 font-medium text-zinc-900"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <button className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
+            Sign Up
+          </button>
         </div>
+        <p className="mt-4 text-sm text-zinc-500">Create your free account. No credit card required.</p>
       </main>
+
+      <footer className="py-8 px-6 sm:px-12 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between text-zinc-500 text-sm">
+        <p>© 2026 CalendlyClone. All rights reserved.</p>
+        <div className="flex gap-4 mt-4 sm:mt-0">
+          <Link href="#" className="hover:text-zinc-900 transition-colors">Privacy</Link>
+          <Link href="#" className="hover:text-zinc-900 transition-colors">Terms</Link>
+        </div>
+      </footer>
     </div>
   );
 }
