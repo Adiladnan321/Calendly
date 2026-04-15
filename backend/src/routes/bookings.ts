@@ -27,7 +27,7 @@ router.get("/public/:username/:slug", async (req, res) => {
   const dateValue = dateQuery.data.date;
   const targetDate = dateValue.includes("T")
     ? parseISO(dateValue)
-    : parseISO(`${dateValue}T00:00:00.000Z`);
+    : parseISO(dateValue); // Parse as local date correctly so date.getDay() works relative to the intended string
 
   const user = await prisma.user.findUnique({
     where: { slug: req.params.username },

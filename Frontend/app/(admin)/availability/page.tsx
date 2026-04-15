@@ -3,14 +3,9 @@
 import { useEffect, useState } from "react";
 import { request } from "@/lib/api";
 import type { Availability } from "@/lib/types";
+import type { DayForm } from "@/components/availability/utils/Availability.types";
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-type DayForm = {
-  enabled: boolean;
-  startTime: string;
-  endTime: string;
-};
 
 function createInitial(): DayForm[] {
   return days.map((_, idx) => ({

@@ -8,40 +8,53 @@ datasource db {
 }
 
 model User {
+  id         String      @id @default(cuid())
+  name       String
+  email      String      @unique
+  timezone   String      @default("Asia/Kolkata")
+  slug       String      @unique
+  eventTypes EventType[]
+  schedules  Schedule[]
+  createdAt  DateTime    @default(now())
+}
+
+model Schedule {
   id           String         @id @default(cuid())
-  name         String
-  email        String         @unique
-  timezone     String         @default("Asia/Kolkata")
-  slug         String         @unique
-  eventTypes   EventType[]
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String         @default("Working Hours")
+  isDefault    Boolean        @default(false)
   availability Availability[]
+  eventTypes   EventType[]
   createdAt    DateTime       @default(now())
 }
 
 model EventType {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  slug      String
-  duration  Int
-  color     String    @default("#0069ff")
-  isActive  Boolean   @default(true)
-  bookings  Booking[]
-  createdAt DateTime  @default(now())
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduleId String?
+  schedule   Schedule? @relation(fields: [scheduleId], references: [id])
+  name       String
+  slug       String
+  duration   Int
+  color      String    @default("#0069ff")
+  isActive   Boolean   @default(true)
+  bookings   Booking[]
+  createdAt  DateTime  @default(now())
 
   @@unique([userId, slug])
 }
 
 model Availability {
-  id        String @id @default(cuid())
-  userId    String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dayOfWeek Int
-  startTime String
-  endTime   String
+  id         String   @id @default(cuid())
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
 
-  @@unique([userId, dayOfWeek])
+  @@unique([scheduleId, dayOfWeek])
 }
 
 model Booking {

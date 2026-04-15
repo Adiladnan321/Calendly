@@ -20,7 +20,7 @@ export default function Home() {
           </Link>
           
           <Link
-            href="/adil-adnan"
+            href="/demo-user"
             className="flex items-center justify-center rounded-full border border-[#0B5FFF] bg-white px-6 py-3 font-semibold text-[#0B5FFF] transition hover:bg-slate-50 shadow-sm"
           >
             Public Booking Page
