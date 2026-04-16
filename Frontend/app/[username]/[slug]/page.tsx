@@ -36,6 +36,10 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
     void params.then(setRouteParams);
   }, [params]);
 
+  const [selectedTimezone, setSelectedTimezone] = useState<string>(
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+
   // Load slots for selected date
   useEffect(() => {
     async function loadSlots(): Promise<void> {
@@ -126,7 +130,64 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
     setCurrentMonth(newDate);
   };
 
-  if (!payload) {
+  const displayPayload = useMemo(() => {
+    if (!payload) return null;
+    
+    try {
+      const timeFormatter = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: selectedTimezone,
+      });
+
+      const dateFormatter = new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        timeZone: selectedTimezone,
+      });
+
+      // We only want to display slots that literally fall inside the selected date logic 
+      // from the perspective of the invitee's timezone. 
+      const targetDateFormatted = format(selectedDate, "yyyy-MM-dd");
+
+      const filteredSlots = payload.slots.reduce((acc, slot) => {
+        // Safe extraction of YYYY-MM-DD
+        const parts = dateFormatter.formatToParts(new Date(slot.start));
+        const ye = parts.find(p => p.type === 'year')?.value;
+        const mo = parts.find(p => p.type === 'month')?.value;
+        const da = parts.find(p => p.type === 'day')?.value;
+        const localDateStr = `${ye}-${mo}-${da}`;
+
+        if (localDateStr === targetDateFormatted) {
+          acc.push({
+            ...slot,
+             startLabel: timeFormatter.format(new Date(slot.start)),
+             endLabel: timeFormatter.format(new Date(slot.end)),
+          });
+        }
+        return acc;
+      }, [] as PublicSlot[]);
+
+      return {
+        ...payload,
+        user: { ...payload.user, timezone: selectedTimezone },
+        slots: filteredSlots,
+      };
+    } catch (err) {
+      console.error("Timezone formatting error:", err);
+      return payload;
+    }
+  }, [payload, selectedTimezone, selectedDate]);
+
+  // Calculate adjusted selectedSlot with formatted time
+  const displaySelectedSlot = useMemo(() => {
+    if (!selectedSlot || !displayPayload) return selectedSlot;
+    const match = displayPayload.slots.find(s => s.start === selectedSlot.start);
+    return match ? { ...selectedSlot, startLabel: match.startLabel, endLabel: match.endLabel } : selectedSlot;
+  }, [selectedSlot, displayPayload]);
+
+  if (!displayPayload) {
     return (
       <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-0 md:p-4">
         <PublicBookingSkeleton />
@@ -140,11 +201,11 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
         
         {/* Success Overlay Check */}
         {message ? (
-          <BookingSuccess payload={payload} selectedSlot={selectedSlot} />
+          <BookingSuccess payload={displayPayload} selectedSlot={displaySelectedSlot} />
         ) : (
         <>
         {/* Left Sidebar */}
-        <BookingSidebar payload={payload} selectedSlot={selectedSlot} />
+        <BookingSidebar payload={displayPayload} selectedSlot={displaySelectedSlot} />
 
         {/* Right Content */}
         <div className="flex w-full flex-col p-4 md:p-8 md:w-7/12 bg-white pb-12 md:pb-8">
@@ -155,8 +216,10 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
               calendarDays={calendarDays}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
-              payload={payload}
+              payload={displayPayload}
               setSelectedSlot={setSelectedSlot}
+              selectedTimezone={selectedTimezone}
+              onTimezoneChange={setSelectedTimezone}
             />
           ) : (
             <BookingForm

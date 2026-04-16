@@ -22,6 +22,7 @@ export type Availability = {
 export type Schedule = {
   id: string;
   name: string;
+  timezone?: string;
   isDefault: boolean;
   availability: Availability[];
 };

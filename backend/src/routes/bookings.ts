@@ -1,4 +1,4 @@
-﻿import { addMinutes, endOfDay, parseISO, startOfDay } from "date-fns";
+﻿import { addDays, addMinutes, endOfDay, parseISO, startOfDay } from "date-fns";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
@@ -58,27 +58,32 @@ router.get("/public/:username/:slug", async (req, res) => {
     return;
   }
 
+  const hostTz = schedule.timezone || user.timezone;
+
   const existingBookings = await prisma.booking.findMany({
     where: {
       eventType: {
         userId: user.id,
       },
       startTime: {
-        gte: startOfDay(targetDate),
-        lte: endOfDay(targetDate),
+        gte: addDays(startOfDay(targetDate), -1),
+        lte: addDays(endOfDay(targetDate), 1),
       },
       status: "confirmed",
     },
     orderBy: { startTime: "asc" },
   });
 
-  const slots = generateSlots(targetDate, eventType.duration, schedule.availability, existingBookings);
+  // Extract purely the YYYY-MM-DD from the `dateValue`
+  const dateStr = dateValue.split("T")[0];
+
+  const slots = generateSlots(dateStr, hostTz, eventType.duration, schedule.availability, existingBookings);
 
   res.json({
     eventType,
     user: {
       name: user.name,
-      timezone: user.timezone,
+      timezone: hostTz,
       slug: user.slug,
     },
     slots: slots.map((slot) => ({

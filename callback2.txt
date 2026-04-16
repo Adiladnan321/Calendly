@@ -1,0 +1,10 @@
+parts_a = commit.author_date.split(b' ')
+author_ts = int(parts_a[0])
+if 1776150000 <= author_ts <= 1776160000:
+    author_ts += 32400
+commit.author_date = str(author_ts).encode() + b' ' + parts_a[1]
+parts_c = commit.committer_date.split(b' ')
+committer_ts = int(parts_c[0])
+if 1776150000 <= committer_ts <= 1776160000:
+    committer_ts += 32400
+commit.committer_date = str(committer_ts).encode() + b' ' + parts_c[1]

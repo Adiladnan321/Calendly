@@ -10,8 +10,6 @@ import SchedulesSidebar from "@/components/availability/SchedulesSidebar";
 import AvailabilityEditor from "@/components/availability/AvailabilityEditor";
 import { AvailabilitySkeleton } from "@/components/SkeletonLoaders";
 
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
 function createInitial(): DayForm[] {
   const arr: DayForm[] = [];
   for (let i = 0; i < 7; i++) {
@@ -31,13 +29,6 @@ export default function AvailabilityPage() {
     queryFn: () => request("/api/availability"),
   });
 
-  useEffect(() => {
-    if (schedules.length > 0 && !activeId && !isLoading) {
-      const defaultSchedule = schedules.find((d) => d.isDefault) || schedules[0];
-      selectSchedule(defaultSchedule);
-    }
-  }, [schedules, activeId, isLoading]);
-
   const selectSchedule = (s: Schedule) => {
     setActiveId(s.id);
     const next = createInitial();
@@ -52,6 +43,13 @@ export default function AvailabilityPage() {
     }
     setForm(next);
   };
+
+  useEffect(() => {
+    if (schedules.length > 0 && !activeId && !isLoading) {
+      const defaultSchedule = schedules.find((d) => d.isDefault) || schedules[0];
+      selectSchedule(defaultSchedule);
+    }
+  }, [schedules, activeId, isLoading]);
 
   const handleSelect = (id: string) => {
     const s = schedules.find((x) => x.id === id);
@@ -104,11 +102,12 @@ export default function AvailabilityPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, schedule, payload }: { id: string, schedule: Schedule, payload: any }) => {
+    mutationFn: async ({ id, schedule, payload }: { id: string, schedule: Schedule, payload: { dayOfWeek: number, startTime: string, endTime: string }[] }) => {
       return request<Schedule>(`/api/availability/${id}`, {
         method: "PUT",
         body: JSON.stringify({ 
           name: schedule.name,
+          timezone: schedule.timezone,
           isDefault: schedule.isDefault,
           days: payload 
         }),
@@ -148,6 +147,12 @@ export default function AvailabilityPage() {
     );
   };
 
+  const handleUpdateTimezone = async (timezone: string): Promise<void> => {
+    queryClient.setQueryData<Schedule[]>(["availability"], (old = []) =>
+      old.map((s) => (s.id === activeId ? { ...s, timezone } : s))
+    );
+  };
+
   const handleSetDefault = async (): Promise<void> => {
     queryClient.setQueryData<Schedule[]>(["availability"], (old = []) =>
       old.map((s) => ({ ...s, isDefault: s.id === activeId }))
@@ -181,6 +186,7 @@ export default function AvailabilityPage() {
                 onSave={handleSave}
                 loading={updateMutation.isPending}
                 onUpdateName={handleUpdateName}
+                onUpdateTimezone={handleUpdateTimezone}
                 onSetDefault={handleSetDefault}
               />
             ) : (
@@ -189,7 +195,7 @@ export default function AvailabilityPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <p className="text-lg font-semibold text-slate-700">No active schedule</p>
-                <p className="mb-6 mt-1 text-sm max-w-sm">Create a schedule to define when you're available for your different event types.</p>
+                <p className="mb-6 mt-1 text-sm max-w-sm">Create a schedule to define when you&apos;re available for your different event types.</p>
                 <button onClick={handleCreate} disabled={createMutation.isPending} className="rounded-full bg-[#0B5FFF] px-6 py-2.5 font-bold text-white shadow-sm hover:bg-[#004ed1] disabled:opacity-50 transition">
                   Create your first schedule
                 </button>

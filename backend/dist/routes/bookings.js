@@ -24,11 +24,13 @@ router.get("/public/:username/:slug", async (req, res) => {
     const dateValue = dateQuery.data.date;
     const targetDate = dateValue.includes("T")
         ? (0, date_fns_1.parseISO)(dateValue)
-        : (0, date_fns_1.parseISO)(`${dateValue}T00:00:00.000Z`);
+        : (0, date_fns_1.parseISO)(dateValue); // Parse as local date correctly so date.getDay() works relative to the intended string
     const user = await prisma_1.prisma.user.findUnique({
         where: { slug: req.params.username },
         include: {
-            availability: true,
+            schedules: {
+                include: { availability: true }
+            },
             eventTypes: {
                 where: { slug: req.params.slug, isActive: true },
                 take: 1,
@@ -40,23 +42,36 @@ router.get("/public/:username/:slug", async (req, res) => {
         return;
     }
     const eventType = user.eventTypes[0];
+    let schedule = user.schedules.find(s => s.id === eventType.scheduleId);
+    if (!schedule) {
+        schedule = user.schedules.find(s => s.isDefault);
+    }
+    if (!schedule) {
+        res.status(404).json({ message: "Schedule not found for event type" });
+        return;
+    }
+    const hostTz = schedule.timezone || user.timezone;
     const existingBookings = await prisma_1.prisma.booking.findMany({
         where: {
-            eventTypeId: eventType.id,
+            eventType: {
+                userId: user.id,
+            },
             startTime: {
-                gte: (0, date_fns_1.startOfDay)(targetDate),
-                lte: (0, date_fns_1.endOfDay)(targetDate),
+                gte: (0, date_fns_1.addDays)((0, date_fns_1.startOfDay)(targetDate), -1),
+                lte: (0, date_fns_1.addDays)((0, date_fns_1.endOfDay)(targetDate), 1),
             },
             status: "confirmed",
         },
         orderBy: { startTime: "asc" },
     });
-    const slots = (0, slots_1.generateSlots)(targetDate, eventType.duration, user.availability, existingBookings);
+    // Extract purely the YYYY-MM-DD from the `dateValue`
+    const dateStr = dateValue.split("T")[0];
+    const slots = (0, slots_1.generateSlots)(dateStr, hostTz, eventType.duration, schedule.availability, existingBookings);
     res.json({
         eventType,
         user: {
             name: user.name,
-            timezone: user.timezone,
+            timezone: hostTz,
             slug: user.slug,
         },
         slots: slots.map((slot) => ({
@@ -78,7 +93,9 @@ router.post("/", async (req, res) => {
     const end = (0, date_fns_1.addMinutes)(start, eventType.duration);
     const conflicting = await prisma_1.prisma.booking.findFirst({
         where: {
-            eventTypeId: eventType.id,
+            eventType: {
+                userId: eventType.userId,
+            },
             status: "confirmed",
             NOT: [{ endTime: { lte: start } }, { startTime: { gte: end } }],
         },
@@ -123,20 +140,15 @@ router.get("/", userContext_1.attachCurrentUser, async (req, res) => {
 });
 router.patch("/:id/cancel", userContext_1.attachCurrentUser, async (req, res) => {
     const booking = await prisma_1.prisma.booking.findFirst({
-        where: {
-            id: req.params.id,
-            eventType: {
-                userId: req.currentUser.id,
-            },
-        },
+        where: { id: req.params.id, eventType: { userId: req.currentUser.id } },
     });
     if (!booking) {
         res.status(404).json({ message: "Booking not found" });
         return;
     }
     const updated = await prisma_1.prisma.booking.update({
-        where: { id: booking.id },
-        data: { status: "cancelled" },
+        where: { id: req.params.id },
+        data: { status: "canceled" },
     });
     res.json(updated);
 });

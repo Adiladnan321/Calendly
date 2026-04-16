@@ -35,12 +35,21 @@ async function ensureBootstrapData() {
             isActive: true,
         },
     });
+    const defaultSchedule = await prisma_1.prisma.schedule.findFirst({
+        where: { userId: demoUser.id, isDefault: true },
+    }) || await prisma_1.prisma.schedule.create({
+        data: {
+            userId: demoUser.id,
+            name: "Default Schedule",
+            isDefault: true,
+        }
+    });
     const weekdays = [1, 2, 3, 4, 5];
     for (const dayOfWeek of weekdays) {
         await prisma_1.prisma.availability.upsert({
             where: {
-                userId_dayOfWeek: {
-                    userId: demoUser.id,
+                scheduleId_dayOfWeek: {
+                    scheduleId: defaultSchedule.id,
                     dayOfWeek,
                 },
             },
@@ -49,7 +58,7 @@ async function ensureBootstrapData() {
                 endTime: "17:00",
             },
             create: {
-                userId: demoUser.id,
+                scheduleId: defaultSchedule.id,
                 dayOfWeek,
                 startTime: "09:00",
                 endTime: "17:00",

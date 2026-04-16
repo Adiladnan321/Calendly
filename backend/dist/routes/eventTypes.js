@@ -10,17 +10,50 @@ const createEventTypeSchema = zod_1.z.object({
     duration: zod_1.z.number().int().min(5).max(240),
     color: zod_1.z.string().min(4).max(20).optional(),
     isActive: zod_1.z.boolean().optional(),
+    scheduleId: zod_1.z.string().optional()
 });
 const updateEventTypeSchema = createEventTypeSchema.partial();
+router.get("/public/:username", async (req, res) => {
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { slug: req.params.username },
+    });
+    if (!user) {
+        res.status(404).json({ message: "User not found" });
+        return;
+    }
+    const eventTypes = await prisma_1.prisma.eventType.findMany({
+        where: { userId: user.id, isActive: true },
+        orderBy: { createdAt: "desc" },
+    });
+    res.json({
+        user: {
+            name: user.name,
+            slug: user.slug,
+        },
+        eventTypes,
+    });
+});
 router.get("/", async (req, res) => {
     const eventTypes = await prisma_1.prisma.eventType.findMany({
         where: { userId: req.currentUser.id },
         orderBy: { createdAt: "desc" },
+        include: {
+            schedule: true
+        }
     });
     res.json(eventTypes);
 });
 router.post("/", async (req, res) => {
     const payload = createEventTypeSchema.parse(req.body);
+    let targetScheduleId = payload.scheduleId;
+    if (!targetScheduleId) {
+        const defaultSchedule = await prisma_1.prisma.schedule.findFirst({
+            where: { userId: req.currentUser.id, isDefault: true }
+        });
+        if (defaultSchedule) {
+            targetScheduleId = defaultSchedule.id;
+        }
+    }
     const eventType = await prisma_1.prisma.eventType.create({
         data: {
             userId: req.currentUser.id,
@@ -29,7 +62,9 @@ router.post("/", async (req, res) => {
             duration: payload.duration,
             color: payload.color,
             isActive: payload.isActive,
+            scheduleId: targetScheduleId,
         },
+        include: { schedule: true }
     });
     res.status(201).json(eventType);
 });
@@ -45,6 +80,7 @@ router.put("/:id", async (req, res) => {
     const eventType = await prisma_1.prisma.eventType.update({
         where: { id: existing.id },
         data: payload,
+        include: { schedule: true }
     });
     res.json(eventType);
 });

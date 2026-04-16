@@ -1,4 +1,5 @@
 import { AvailabilityEditorProps } from "./utils/Availability.types";
+import { commonTimezones } from "@/lib/timezones";
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -9,6 +10,7 @@ export default function AvailabilityEditor({
   onSave,
   loading,
   onUpdateName,
+  onUpdateTimezone,
   onSetDefault,
 }: AvailabilityEditorProps) {
   return (
@@ -23,8 +25,25 @@ export default function AvailabilityEditor({
             className="w-full truncate text-2xl font-bold text-slate-900 outline-none placeholder:text-slate-300 border-b-2 border-transparent transition focus:border-slate-300 bg-transparent hover:bg-slate-50 p-1 -ml-1 rounded"
             placeholder="Schedule Name"
           />
-          <p className="mt-1 text-sm font-medium text-slate-500">
-            Define the weekly hours when you're available for this schedule.
+          <div className="mt-2 flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-500" htmlFor="timezone-select">
+              Timezone:
+            </label>
+            <select
+              id="timezone-select"
+              value={schedule.timezone || "Asia/Kolkata"}
+              onChange={(e) => onUpdateTimezone?.(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm outline-none transition focus:border-[#0B5FFF] focus:ring-1 focus:ring-[#0B5FFF]"
+            >
+              {commonTimezones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Define the weekly hours when you&apos;re available for this schedule.
           </p>
         </div>
 

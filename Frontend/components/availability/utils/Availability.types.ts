@@ -13,6 +13,7 @@ export interface AvailabilityEditorProps {
   onSave: () => Promise<void>;
   loading: boolean;
   onUpdateName?: (name: string) => Promise<void>;
+  onUpdateTimezone?: (timezone: string) => Promise<void>;
   onSetDefault?: () => Promise<void>;
 }
 

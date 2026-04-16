@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { format, isSameDay, isToday, isBefore, startOfDay } from "date-fns";
 import { BookingCalendarProps } from "./utils/BookingCalendar.types";
+import { commonTimezones } from "@/lib/timezones";
 
 export default function BookingCalendar({
   currentMonth,
@@ -10,6 +11,8 @@ export default function BookingCalendar({
   setSelectedDate,
   payload,
   setSelectedSlot,
+  selectedTimezone,
+  onTimezoneChange,
 }: BookingCalendarProps) {
   const timeSlotsRef = useRef<HTMLDivElement>(null);
 
@@ -88,14 +91,22 @@ export default function BookingCalendar({
           {/* Timezone */}
           <div className="mb-4 mt-6">
             <p className="text-[14.5px] font-bold text-[#1A1A1A] mb-2">Time zone</p>
-            <div className="flex items-center gap-[6px] text-[15px] text-slate-900 cursor-pointer py-1 px-1 w-fit mt-3">
+            <div className="flex items-center gap-[6px] text-[15px] text-slate-900 cursor-pointer py-1 px-1 w-fit mt-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" className="text-slate-500">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {payload?.user?.timezone || "India Standard Time"}
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="ml-1">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+              <select
+                className="bg-transparent font-medium outline-none cursor-pointer appearance-none pr-4 w-full"
+                value={selectedTimezone || payload?.user?.timezone || "Asia/Kolkata"}
+                onChange={(e) => onTimezoneChange && onTimezoneChange(e.target.value)}
+              >
+                {selectedTimezone && !commonTimezones.includes(selectedTimezone) && (
+                  <option value={selectedTimezone}>{selectedTimezone}</option>
+                )}
+                {commonTimezones.map(tz => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

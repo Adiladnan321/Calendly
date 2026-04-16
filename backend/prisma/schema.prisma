@@ -23,6 +23,7 @@ model Schedule {
   userId       String
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String         @default("Working Hours")
+  timezone     String         @default("Asia/Kolkata")
   isDefault    Boolean        @default(false)
   availability Availability[]
   eventTypes   EventType[]

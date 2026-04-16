@@ -12,11 +12,13 @@ const dayAvailabilitySchema = z.object({
 
 const createScheduleSchema = z.object({
   name: z.string().min(1),
+  timezone: z.string().optional(),
   isDefault: z.boolean().optional(),
 });
 
 const updateScheduleSchema = z.object({
   name: z.string().optional(),
+  timezone: z.string().optional(),
   isDefault: z.boolean().optional(),
   days: z.array(dayAvailabilitySchema).optional(),
 });
@@ -36,7 +38,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { name, isDefault } = createScheduleSchema.parse(req.body);
+  const { name, timezone, isDefault } = createScheduleSchema.parse(req.body);
 
   if (isDefault) {
     await prisma.schedule.updateMany({
@@ -49,6 +51,7 @@ router.post("/", async (req, res) => {
     data: {
       userId: req.currentUser!.id,
       name,
+      timezone: timezone ?? "Asia/Kolkata",
       isDefault: isDefault ?? false,
     },
     include: { availability: true }
@@ -59,7 +62,7 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, isDefault, days } = updateScheduleSchema.parse(req.body);
+  const { name, timezone, isDefault, days } = updateScheduleSchema.parse(req.body);
 
   const schedule = await prisma.schedule.findFirst({
     where: { id, userId: req.currentUser!.id }
@@ -91,6 +94,7 @@ router.put("/:id", async (req, res) => {
       where: { id },
       data: {
         name: name !== undefined ? name : schedule.name,
+        timezone: timezone !== undefined ? timezone : schedule.timezone,
         isDefault: isDefault !== undefined ? isDefault : schedule.isDefault,
       },
       include: {

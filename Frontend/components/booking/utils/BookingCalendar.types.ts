@@ -8,4 +8,6 @@ export interface BookingCalendarProps {
   setSelectedDate: (date: Date) => void;
   payload: PublicPayload | null;
   setSelectedSlot: (slot: PublicSlot) => void;
+  selectedTimezone?: string;
+  onTimezoneChange?: (tz: string) => void;
 }
