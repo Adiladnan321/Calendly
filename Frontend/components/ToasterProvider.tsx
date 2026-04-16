@@ -6,18 +6,21 @@ export function ToasterProvider() {
   return (
     <Toaster 
       position="top-right"
+      containerClassName="!inset-4 md:!top-4 md:!right-4 md:!left-auto md:!bottom-auto"
       toastOptions={{
         style: {
           padding: 0,
           background: 'transparent',
           boxShadow: 'none',
+          maxWidth: '100%',
+          width: '100%',
         },
       }}
     >
       {(t) => (
         <ToastBar toast={t}>
           {({ icon, message }) => (
-            <div className="flex w-full md:w-[360px] items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5">
+            <div className="flex flex-1 md:w-[360px] items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5">
               <div className="flex-shrink-0 pt-0.5">
                 {icon}
               </div>
