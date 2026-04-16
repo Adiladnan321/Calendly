@@ -10,6 +10,8 @@ export default function EventTypesList({
   onToggleActive,
   onMenuToggle,
   onCopyLink,
+  onEdit,
+  onDelete,
 }: EventTypesListProps) {
   if (error) {
     return <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
@@ -35,6 +37,8 @@ export default function EventTypesList({
             onToggleActive={onToggleActive}
             onMenuToggle={onMenuToggle}
             onCopyLink={onCopyLink}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         );
       })}

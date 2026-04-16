@@ -1,4 +1,4 @@
-import { addMinutes, endOfDay, parseISO, startOfDay } from "date-fns";
+﻿import { addMinutes, endOfDay, parseISO, startOfDay } from "date-fns";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
@@ -32,7 +32,9 @@ router.get("/public/:username/:slug", async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { slug: req.params.username },
     include: {
-      availability: true,
+      schedules: {
+        include: { availability: true }
+      },
       eventTypes: {
         where: { slug: req.params.slug, isActive: true },
         take: 1,
@@ -46,6 +48,15 @@ router.get("/public/:username/:slug", async (req, res) => {
   }
 
   const eventType = user.eventTypes[0];
+  let schedule = user.schedules.find(s => s.id === eventType.scheduleId);
+  if (!schedule) {
+    schedule = user.schedules.find(s => s.isDefault);
+  }
+
+  if (!schedule) {
+    res.status(404).json({ message: "Schedule not found for event type" });
+    return;
+  }
 
   const existingBookings = await prisma.booking.findMany({
     where: {
@@ -61,7 +72,7 @@ router.get("/public/:username/:slug", async (req, res) => {
     orderBy: { startTime: "asc" },
   });
 
-  const slots = generateSlots(targetDate, eventType.duration, user.availability, existingBookings);
+  const slots = generateSlots(targetDate, eventType.duration, schedule.availability, existingBookings);
 
   res.json({
     eventType,
@@ -147,12 +158,7 @@ router.get("/", attachCurrentUser, async (req, res) => {
 
 router.patch("/:id/cancel", attachCurrentUser, async (req, res) => {
   const booking = await prisma.booking.findFirst({
-    where: {
-      id: req.params.id,
-      eventType: {
-        userId: req.currentUser!.id,
-      },
-    },
+    where: { id: req.params.id, eventType: { userId: req.currentUser!.id } },
   });
 
   if (!booking) {
@@ -161,8 +167,8 @@ router.patch("/:id/cancel", attachCurrentUser, async (req, res) => {
   }
 
   const updated = await prisma.booking.update({
-    where: { id: booking.id },
-    data: { status: "cancelled" },
+    where: { id: req.params.id },
+    data: { status: "canceled" },
   });
 
   res.json(updated);

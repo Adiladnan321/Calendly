@@ -1,4 +1,4 @@
-import type { EventType } from "@/lib/types";
+import type { EventType, Schedule } from "@/lib/types";
 
 export interface EventTypesHeaderProps {
   query: string;
@@ -15,6 +15,8 @@ export interface EventTypesListProps {
   onToggleActive: (id: string, currentStatus: boolean | undefined) => void;
   onMenuToggle: (id: string | null) => void;
   onCopyLink: (id: string, slug: string) => void;
+  onEdit?: (item: EventType) => void;
+  onDelete?: (id: string) => void;
 }
 
 export interface EventTypeItemProps {
@@ -25,6 +27,8 @@ export interface EventTypeItemProps {
   onToggleActive: (id: string, currentStatus: boolean | undefined) => void;
   onMenuToggle: (id: string | null) => void;
   onCopyLink: (id: string, slug: string) => void;
+  onEdit?: (item: EventType) => void;
+  onDelete?: (id: string) => void;
 }
 
 export interface CreatePayload {
@@ -32,11 +36,14 @@ export interface CreatePayload {
   slug: string;
   duration: number;
   color: string;
+  scheduleId?: string;
 }
 
 export interface CreateEventTypeModalProps {
   isOpen: boolean;
+  isEdit?: boolean;
   payload: CreatePayload;
+  schedules: Schedule[];
   loading: boolean;
   onClose: () => void;
   onChange: (payload: CreatePayload) => void;

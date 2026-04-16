@@ -1,31 +1,37 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { request } from "@/lib/api";
-import type { EventType } from "@/lib/types";
+import type { EventType, Schedule } from "@/lib/types";
 import EventTypesHeader from "@/components/event-types/EventTypesHeader";
 import EventTypesList from "@/components/event-types/EventTypesList";
 import CreateEventTypeModal from "@/components/event-types/CreateEventTypeModal";
 
 export default function EventTypesPage() {
   const [items, setItems] = useState<EventType[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Create Modal State
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createPayload, setCreatePayload] = useState({ name: "", slug: "", duration: 30, color: "#8a42ff" });
-  const [createLoading, setCreateLoading] = useState(false);
+  // Modal State for both Create and Edit
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editTargetId, setEditTargetId] = useState<string | null>(null);
+  const [modalPayload, setModalPayload] = useState<{ name: string, slug: string, duration: number, color: string, scheduleId?: string }>({ name: "", slug: "", duration: 30, color: "#8a42ff" });
+  const [modalLoading, setModalLoading] = useState(false);
 
   async function loadEventTypes(): Promise<void> {
     setLoading(true);
     setError(null);
     try {
-      const data = await request<EventType[]>("/api/event-types");
+      const [data, schedulesData] = await Promise.all([
+        request<EventType[]>("/api/event-types"),
+        request<Schedule[]>("/api/availability")
+      ]);
       setItems(data);
+      setSchedules(schedulesData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load event types");
     } finally {
@@ -42,9 +48,7 @@ export default function EventTypesPage() {
   );
 
   const toggleItemActive = (id: string, currentStatus: boolean | undefined) => {
-    // Determine active safely since it might be undefined originally
     const newStatus = typeof currentStatus !== "undefined" ? !currentStatus : false;
-    
     setItems((prev) =>
       prev.map((it) =>
         it.id === id ? { ...it, isActive: newStatus } : it
@@ -60,23 +64,59 @@ export default function EventTypesPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  async function handleCreateSubmit(e: React.FormEvent) {
+  const openCreateModal = () => {
+    setEditTargetId(null);
+    setModalPayload({ name: "", slug: "", duration: 30, color: "#8a42ff" });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (item: EventType) => {
+    setEditTargetId(item.id);
+    setModalPayload({
+      name: item.name,
+      slug: item.slug,
+      duration: item.duration,
+      color: item.color,
+      scheduleId: item.scheduleId || undefined
+    });
+    setIsModalOpen(true);
+    setMenuOpenFor(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this event type?")) return;
+    try {
+      await request(`/api/event-types/${id}`, { method: "DELETE" });
+      setItems((prev) => prev.filter((it) => it.id !== id));
+      setMenuOpenFor(null);
+    } catch (err) {
+      alert("Failed to delete the event type.");
+    }
+  };
+
+  async function handleModalSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setCreateLoading(true);
+    setModalLoading(true);
     setError(null);
     try {
-      const newItem = await request<EventType>("/api/event-types", {
-        method: "POST",
-        body: JSON.stringify(createPayload),
-      });
-      // Add to list and close modal
-      setItems((prev) => [newItem, ...prev]);
-      setIsCreateModalOpen(false);
-      setCreatePayload({ name: "", slug: "", duration: 30, color: "#8a42ff" });
+      if (editTargetId) {
+        const updatedItem = await request<EventType>(`/api/event-types/${editTargetId}`, {
+          method: "PUT",
+          body: JSON.stringify(modalPayload),
+        });
+        setItems((prev) => prev.map(it => it.id === editTargetId ? updatedItem : it));
+      } else {
+        const newItem = await request<EventType>("/api/event-types", {
+          method: "POST",
+          body: JSON.stringify(modalPayload),
+        });
+        setItems((prev) => [newItem, ...prev]);
+      }
+      setIsModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create scheduling type");
+      setError(err instanceof Error ? err.message : "Failed to save scheduling type");
     } finally {
-      setCreateLoading(false);
+      setModalLoading(false);
     }
   }
 
@@ -85,7 +125,7 @@ export default function EventTypesPage() {
       <EventTypesHeader
         query={query}
         onQueryChange={setQuery}
-        onCreateClick={() => setIsCreateModalOpen(true)}
+        onCreateClick={openCreateModal}
       />
 
       <EventTypesList
@@ -97,15 +137,19 @@ export default function EventTypesPage() {
         onToggleActive={toggleItemActive}
         onMenuToggle={setMenuOpenFor}
         onCopyLink={handleCopyLink}
+        onEdit={openEditModal}
+        onDelete={handleDelete}
       />
 
       <CreateEventTypeModal
-        isOpen={isCreateModalOpen}
-        payload={createPayload}
-        loading={createLoading}
-        onClose={() => setIsCreateModalOpen(false)}
-        onChange={setCreatePayload}
-        onSubmit={handleCreateSubmit}
+        isOpen={isModalOpen}
+        isEdit={!!editTargetId}
+        payload={modalPayload}
+        schedules={schedules}
+        loading={modalLoading}
+        onClose={() => setIsModalOpen(false)}
+        onChange={setModalPayload}
+        onSubmit={handleModalSubmit}
       />
     </div>
   );

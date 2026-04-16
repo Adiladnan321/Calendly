@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
 
@@ -10,6 +10,7 @@ const createEventTypeSchema = z.object({
   duration: z.number().int().min(5).max(240),
   color: z.string().min(4).max(20).optional(),
   isActive: z.boolean().optional(),
+  scheduleId: z.string().optional()
 });
 
 const updateEventTypeSchema = createEventTypeSchema.partial();
@@ -42,6 +43,9 @@ router.get("/", async (req, res) => {
   const eventTypes = await prisma.eventType.findMany({
     where: { userId: req.currentUser!.id },
     orderBy: { createdAt: "desc" },
+    include: {
+      schedule: true
+    }
   });
 
   res.json(eventTypes);
@@ -49,6 +53,16 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const payload = createEventTypeSchema.parse(req.body);
+
+  let targetScheduleId = payload.scheduleId;
+  if (!targetScheduleId) {
+    const defaultSchedule = await prisma.schedule.findFirst({
+      where: { userId: req.currentUser!.id, isDefault: true }
+    });
+    if (defaultSchedule) {
+      targetScheduleId = defaultSchedule.id;
+    }
+  }
 
   const eventType = await prisma.eventType.create({
     data: {
@@ -58,7 +72,9 @@ router.post("/", async (req, res) => {
       duration: payload.duration,
       color: payload.color,
       isActive: payload.isActive,
+      scheduleId: targetScheduleId,
     },
+    include: { schedule: true }
   });
 
   res.status(201).json(eventType);
@@ -79,6 +95,7 @@ router.put("/:id", async (req, res) => {
   const eventType = await prisma.eventType.update({
     where: { id: existing.id },
     data: payload,
+    include: { schedule: true }
   });
 
   res.json(eventType);
