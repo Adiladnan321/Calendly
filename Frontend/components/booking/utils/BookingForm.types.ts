@@ -8,5 +8,5 @@ export interface BookingFormProps {
   setEmail: (email: string) => void;
   handleBook: (e: FormEvent<HTMLFormElement>) => Promise<void>;
   setSelectedSlot: (slot: PublicSlot | null) => void;
-  error: string | null;
+
 }

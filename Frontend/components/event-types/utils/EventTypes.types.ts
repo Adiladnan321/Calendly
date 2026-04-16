@@ -9,7 +9,7 @@ export interface EventTypesHeaderProps {
 export interface EventTypesListProps {
   items: EventType[];
   loading: boolean;
-  error: string | null;
+
   menuOpenFor: string | null;
   copiedId: string | null;
   onToggleActive: (id: string, currentStatus: boolean | undefined) => void;

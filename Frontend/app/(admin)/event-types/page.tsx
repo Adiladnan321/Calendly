@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { request } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import type { EventType, Schedule } from "@/lib/types";
 import EventTypesHeader from "@/components/event-types/EventTypesHeader";
 import EventTypesList from "@/components/event-types/EventTypesList";
@@ -39,7 +40,9 @@ export default function EventTypesPage() {
     onSuccess: (newItem) => {
       queryClient.setQueryData<EventType[]>(["event-types"], (old = []) => [newItem, ...old]);
       setIsModalOpen(false);
+      toast.success("Event type created");
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to create event type"),
   });
 
   const updateMutation = useMutation({
@@ -53,7 +56,9 @@ export default function EventTypesPage() {
         old.map((it) => (it.id === editTargetId ? updatedItem : it))
       );
       setIsModalOpen(false);
+      toast.success("Event type updated");
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update event type"),
   });
 
   const deleteMutation = useMutation({
@@ -63,7 +68,9 @@ export default function EventTypesPage() {
         old.filter((it) => it.id !== deletedId)
       );
       setMenuOpenFor(null);
+      toast.success("Event type deleted");
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to delete event type"),
   });
 
   const filteredItems = items.filter((item) =>
@@ -83,6 +90,7 @@ export default function EventTypesPage() {
     const url = `${window.location.origin}/demo-user/${slug}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
+    toast.success("Link copied!");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -119,9 +127,6 @@ export default function EventTypesPage() {
     }
   }
 
-  const modalError = createMutation.error || updateMutation.error;
-  const errorMsg = modalError instanceof Error ? modalError.message : "Failed to save scheduling type";
-
   return (
     <div className="space-y-6">
       <EventTypesHeader
@@ -133,7 +138,6 @@ export default function EventTypesPage() {
       <EventTypesList
         items={filteredItems}
         loading={isLoading}
-        error={null}
         menuOpenFor={menuOpenFor}
         copiedId={copiedId}
         onToggleActive={toggleItemActive}
@@ -142,8 +146,6 @@ export default function EventTypesPage() {
         onEdit={openEditModal}
         onDelete={handleDelete}
       />
-
-      {modalError && <div className="text-red-500 font-bold mb-4">{errorMsg}</div>}
 
       <CreateEventTypeModal
         isOpen={isModalOpen}

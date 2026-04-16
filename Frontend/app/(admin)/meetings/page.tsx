@@ -1,13 +1,15 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { request } from "@/lib/api";
+import { toast } from "react-hot-toast";
 import type { Booking } from "@/lib/types";
 import { isAfter, isBefore, isSameDay, parseISO, format } from "date-fns";
 import MeetingsHeader from "@/components/meetings/MeetingsHeader";
 import MeetingsTabs from "@/components/meetings/MeetingsTabs";
 import MeetingsList from "@/components/meetings/MeetingsList";
+import { MeetingsSkeleton } from "@/components/SkeletonLoaders";
 
 export default function MeetingsPage() {
   const { data: data = [], isLoading: loading, error } = useQuery<Booking[]>({
@@ -52,7 +54,10 @@ export default function MeetingsPage() {
   );
 
   const handleExport = () => {
-    if (!filtered.length) return;
+    if (!filtered.length) {
+      toast.error("No meetings to export in the current view.");
+      return;
+    }
 
     const headers = ["Invitee Name", "Invitee Email", "Event Type", "Start Time", "End Time", "Status"];
     const rows = filtered.map((booking) => [
@@ -75,14 +80,17 @@ export default function MeetingsPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    toast.success("Meetings exported successfully");
   };
 
-  if (error) {
-    return <div className="p-4 text-red-600 bg-red-50 rounded-xl max-w-[1000px] mx-auto">{error instanceof Error ? error.message : "Could not load meetings"}</div>;
-  }
+  useEffect(() => {
+    if (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load meetings");
+    }
+  }, [error]);
 
   if (loading) {
-    return <div className="p-4 text-slate-500 max-w-[1000px] mx-auto">Loading...</div>;
+    return <MeetingsSkeleton />;
   }
 
   return (

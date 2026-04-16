@@ -12,8 +12,6 @@ export interface AvailabilityEditorProps {
   setForm: React.Dispatch<React.SetStateAction<DayForm[]>>;
   onSave: () => Promise<void>;
   loading: boolean;
-  error: string | null;
-  saved: string | null;
   onUpdateName?: (name: string) => Promise<void>;
   onSetDefault?: () => Promise<void>;
 }

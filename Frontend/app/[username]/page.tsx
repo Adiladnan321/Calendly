@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { request } from "@/lib/api";
+import { toast } from "react-hot-toast";
 
 import EventTypeCard from "@/components/booking/EventTypeCard";
 import { EventType } from "@/components/booking/utils/EventTypeCard.types";
 import UserHeader from "@/components/booking/UserHeader";
+import { PublicProfileSkeleton } from "@/components/SkeletonLoaders";
 
 type PublicUserPageProps = {
   params: Promise<{
@@ -27,7 +29,7 @@ type PublicPayload = {
 export default function PublicUserPage({ params }: PublicUserPageProps) {
   const [routeParams, setRouteParams] = useState<{ username: string } | null>(null);
   const [payload, setPayload] = useState<PublicPayload | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     void params.then(setRouteParams);
@@ -41,7 +43,8 @@ export default function PublicUserPage({ params }: PublicUserPageProps) {
         const data = await request<PublicPayload>(`/api/event-types/public/${routeParams.username}`);
         setPayload(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not load user profile");
+        setError(true);
+        toast.error(err instanceof Error ? err.message : "Could not load user profile");
       }
     }
 
@@ -51,15 +54,15 @@ export default function PublicUserPage({ params }: PublicUserPageProps) {
   if (error) {
     return (
       <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-4">
-        <p className="text-red-600">{error}</p>
+        <p className="text-slate-500 font-semibold">User profile unavailable.</p>
       </main>
     );
   }
 
   if (!payload) {
     return (
-      <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-4">
-        <p className="text-slate-500 font-semibold">Loading...</p>
+      <main className="min-h-screen bg-[#F3F4F5]">
+        <PublicProfileSkeleton />
       </main>
     );
   }

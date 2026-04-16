@@ -8,8 +8,6 @@ export default function AvailabilityEditor({
   setForm,
   onSave,
   loading,
-  error,
-  saved,
   onUpdateName,
   onSetDefault,
 }: AvailabilityEditorProps) {
@@ -50,9 +48,6 @@ export default function AvailabilityEditor({
           </button>
         </div>
       </header>
-
-      {error && <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-      {saved && <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">{saved}</p>}
 
       <div className="space-y-4">
         {form.map((day, idx) => (

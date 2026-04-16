@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "@/lib/api";
+import { toast } from "react-hot-toast";
 import type { Schedule } from "@/lib/types";
 import type { DayForm } from "@/components/availability/utils/Availability.types";
 import SchedulesSidebar from "@/components/availability/SchedulesSidebar";
 import AvailabilityEditor from "@/components/availability/AvailabilityEditor";
+import { AvailabilitySkeleton } from "@/components/SkeletonLoaders";
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -23,8 +25,6 @@ export default function AvailabilityPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const [form, setForm] = useState<DayForm[]>(createInitial());
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(null);
 
   const { data: schedules = [], isLoading } = useQuery<Schedule[]>({
     queryKey: ["availability"],
@@ -51,8 +51,6 @@ export default function AvailabilityPage() {
       };
     }
     setForm(next);
-    setError(null);
-    setSaved(null);
   };
 
   const handleSelect = (id: string) => {
@@ -69,8 +67,11 @@ export default function AvailabilityPage() {
     onSuccess: (newSchedule) => {
       queryClient.setQueryData<Schedule[]>(["availability"], (old = []) => [...old, newSchedule]);
       selectSchedule(newSchedule);
+      toast.success("Schedule created successfully");
     },
-    onError: (err) => setError(err instanceof Error ? err.message : "Failed to create schedule"),
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to create schedule");
+    },
   });
 
   const handleCreate = () => createMutation.mutate();
@@ -90,8 +91,11 @@ export default function AvailabilityPage() {
         }
         return nextSchedules;
       });
+      toast.success("Schedule deleted completely");
     },
-    onError: (err) => setError(err instanceof Error ? err.message : "Failed to delete schedule"),
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete schedule");
+    },
   });
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
@@ -114,15 +118,15 @@ export default function AvailabilityPage() {
       queryClient.setQueryData<Schedule[]>(["availability"], (old = []) => 
         old.map((s) => (s.id === updated.id ? updated : s))
       );
-      setSaved("Availability saved.");
+      toast.success("Availability saved successfully");
     },
-    onError: (err) => setError(err instanceof Error ? err.message : "Could not save availability"),
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Could not save availability");
+    },
   });
 
   const handleSave = async (): Promise<void> => {
     if (!activeId) return;
-    setError(null);
-    setSaved(null);
     const schedule = schedules.find((s) => s.id === activeId);
     if (!schedule) return;
 
@@ -157,28 +161,25 @@ export default function AvailabilityPage() {
         <h2 className="mt-1 text-2xl font-bold text-slate-900">Availability</h2>
       </header>
 
-      <div className="flex flex-col md:flex-row h-[calc(100vh-140px)] min-h-150 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        {isLoading ? (
-          <div className="p-8 text-center text-slate-500 w-full">Loading schedules...</div>
-        ) : (
-          <>
-            <SchedulesSidebar
-              schedules={schedules}
-              activeId={activeId}
-              onSelect={handleSelect}
-              onCreate={handleCreate}
-              onDelete={handleDelete}
-            />
+      {isLoading ? (
+        <AvailabilitySkeleton />
+      ) : (
+        <div className="flex flex-col md:flex-row h-[calc(100vh-140px)] min-h-150 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <SchedulesSidebar
+            schedules={schedules}
+            activeId={activeId}
+            onSelect={handleSelect}
+            onCreate={handleCreate}
+            onDelete={handleDelete}
+          />
 
-            {activeId ? (
+          {activeId ? (
               <AvailabilityEditor
                 schedule={schedules.find((s) => s.id === activeId)!}
                 form={form}
                 setForm={setForm}
                 onSave={handleSave}
                 loading={updateMutation.isPending}
-                error={error}
-                saved={saved}
                 onUpdateName={handleUpdateName}
                 onSetDefault={handleSetDefault}
               />
@@ -194,9 +195,8 @@ export default function AvailabilityPage() {
                 </button>
               </div>
             )}
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

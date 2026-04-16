@@ -1,10 +1,10 @@
 import { EventTypesListProps } from "./utils/EventTypes.types";
 import EventTypeItem from "./EventTypeItem";
+import { EventTypesSkeleton } from "@/components/SkeletonLoaders";
 
 export default function EventTypesList({
   items,
   loading,
-  error,
   menuOpenFor,
   copiedId,
   onToggleActive,
@@ -13,12 +13,8 @@ export default function EventTypesList({
   onEdit,
   onDelete,
 }: EventTypesListProps) {
-  if (error) {
-    return <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
-  }
-
   if (loading) {
-    return <p className="text-slate-500">Loading...</p>;
+    return <EventTypesSkeleton />;
   }
 
   return (

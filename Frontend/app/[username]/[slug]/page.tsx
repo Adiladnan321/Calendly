@@ -3,11 +3,13 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { format, addDays, startOfMonth, endOfMonth, getDay, isSameDay, isToday, isBefore, startOfDay } from "date-fns";
 import { request } from "@/lib/api";
+import { toast } from "react-hot-toast";
 import BookingSuccess from "@/components/booking/BookingSuccess";
 import BookingSidebar from "@/components/booking/BookingSidebar";
 import BookingCalendar from "@/components/booking/BookingCalendar";
 import BookingForm from "@/components/booking/BookingForm";
 import { PublicPayload, PublicSlot } from "@/components/booking/utils/sharedTypes";
+import { PublicBookingSkeleton } from "@/components/SkeletonLoaders";
 
 type PublicBookingPageProps = {
   params: Promise<{
@@ -28,7 +30,6 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   // Load params
   useEffect(() => {
@@ -42,7 +43,6 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
         return;
       }
 
-      setError(null);
       setMessage(null);
       
       const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -53,7 +53,7 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
         );
         setPayload(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not load slots");
+        toast.error(err instanceof Error ? err.message : "Could not load slots");
       }
     }
 
@@ -64,11 +64,10 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
     e.preventDefault();
 
     if (!payload || !selectedSlot) {
-      setError("Please choose a slot first.");
+      toast.error("Please choose a slot first.");
       return;
     }
 
-    setError(null);
     setMessage(null);
     try {
       await request("/api/bookings", {
@@ -81,8 +80,9 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
         }),
       });
       setMessage("Booking confirmed.");
+      toast.success("Booking confirmed");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create booking");
+      toast.error(err instanceof Error ? err.message : "Could not create booking");
     }
   }
 
@@ -126,6 +126,14 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
     setCurrentMonth(newDate);
   };
 
+  if (!payload) {
+    return (
+      <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-0 md:p-4">
+        <PublicBookingSkeleton />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-0 md:p-4">
       <div className={`relative flex w-full max-w-[1060px] flex-col overflow-hidden md:rounded-lg bg-white md:shadow-[0_1px_8px_0_rgba(0,0,0,0.08)] md:flex-row min-h-screen md:min-h-0 ${!message ? 'md:h-[650px]' : 'md:min-h-[500px]'}`}>
@@ -158,7 +166,6 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
               setEmail={setEmail}
               handleBook={handleBook}
               setSelectedSlot={setSelectedSlot}
-              error={error}
             />
           )}
         </div>

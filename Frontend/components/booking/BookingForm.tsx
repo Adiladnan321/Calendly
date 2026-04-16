@@ -8,7 +8,6 @@ export default function BookingForm({
   setEmail,
   handleBook,
   setSelectedSlot,
-  error,
 }: BookingFormProps) {
   return (
     <div className="w-full max-w-md mx-auto animate-in fade-in duration-300 pt-2 md:pt-0">
@@ -59,8 +58,6 @@ export default function BookingForm({
           </button>
         </div>
       </form>
-
-      {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 font-medium">{error}</p>}
     </div>
   );
 }
