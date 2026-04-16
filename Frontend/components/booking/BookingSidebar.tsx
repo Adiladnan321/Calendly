@@ -6,15 +6,8 @@ export default function BookingSidebar({ payload, selectedSlot }: BookingSidebar
   const router = useRouter();
 
   return (
-    <div className="flex w-full flex-col p-8 md:w-5/12 border-r border-slate-200">
-      <div 
-        onClick={() => router.back()} 
-        className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[#0B5FFF] hover:bg-slate-50 cursor-pointer"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-      </div>
+    <div className="flex w-full flex-col p-6 md:p-8 md:w-5/12 border-b md:border-b-0 md:border-r border-slate-200 bg-white z-10 relative mt-14">
+ 
 
       <p className="text-[17px] font-bold text-slate-500">{payload?.user?.name || "Demo User"}</p>
       <h1 className="mt-1 text-3xl font-bold text-[#1A1A1A]">{payload?.eventType?.name || "30 Minute Meeting"}</h1>

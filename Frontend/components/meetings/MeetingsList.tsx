@@ -10,8 +10,8 @@ export default function MeetingsList({ groupedBookings }: MeetingsListProps) {
           return (
             <div key={dateStr} className="flex flex-col">
               {/* Date Header */}
-              <div className="flex items-center border-b border-slate-200 bg-white px-6 py-4">
-                <span className="text-[15.5px] text-slate-800 mr-2">
+              <div className="flex items-center border-b border-slate-200 bg-white px-4 sm:px-6 py-4">
+                <span className="text-[14.5px] sm:text-[15.5px] text-slate-800 mr-2 font-medium">
                   {format(dateObj, "EEEE, d MMMM yyyy")}
                 </span>
                 {isToday(dateObj) && (
@@ -33,19 +33,28 @@ export default function MeetingsList({ groupedBookings }: MeetingsListProps) {
                 return (
                   <div
                     key={booking.id}
-                    className="group flex items-center border-b border-slate-200 bg-white px-6 py-5 hover:bg-slate-50 transition w-full"
+                    className="group flex flex-col sm:flex-row sm:items-center border-b border-slate-200 bg-white px-4 sm:px-6 py-5 hover:bg-slate-50 transition w-full gap-4 sm:gap-0"
                   >
-                    {/* Time & Circle */}
-                    <div className="flex items-center gap-[40px] w-1/4 min-w-[220px]">
-                      <div className="h-9 w-9 rounded-full bg-[#8a42ff] flex-shrink-0" />
-                      <span className="text-[15px] font-medium text-slate-600 whitespace-nowrap">
-                        {formattedTime}
-                      </span>
+                    {/* Top Row for Mobile (Time & Actions) */}
+                    <div className="flex items-center justify-between sm:w-1/4 sm:min-w-[220px] w-full">
+                      {/* Time & Circle */}
+                      <div className="flex items-center gap-3 sm:gap-[40px]">
+                        <div className="h-6 w-6 sm:h-9 sm:w-9 rounded-full bg-[#8a42ff] flex-shrink-0" />
+                        <span className="text-[14.5px] sm:text-[15px] font-medium text-slate-600 whitespace-nowrap">
+                          {formattedTime}
+                        </span>
+                      </div>
+                      {/* Mobile Actions Header */}
+                      <div className="flex sm:hidden justify-end">
+                        <button className="flex items-center gap-1.5 text-[14px] font-semibold text-slate-400 hover:text-[#0B3558] transition bg-transparent p-1">
+                          Details
+                        </button>
+                      </div>
                     </div>
 
                     {/* Title & Type */}
-                    <div className="flex flex-col justify-center w-5/12 min-w-[280px] pl-4">
-                      <p className="text-[15.5px] font-bold text-[#0B3558]">
+                    <div className="flex flex-col justify-center sm:w-5/12 sm:min-w-[280px] sm:pl-4">
+                      <p className="text-[16px] sm:text-[15.5px] font-bold text-slate-900 sm:text-[#0B3558]">
                         {booking.inviteeName}
                       </p>
                       <p className="text-[14.5px] text-slate-600 mt-0.5">
@@ -57,12 +66,12 @@ export default function MeetingsList({ groupedBookings }: MeetingsListProps) {
                     </div>
 
                     {/* Attributes */}
-                    <div className="text-[14.5px] text-[#0B3558] w-1/4">
+                    <div className="text-[13px] sm:text-[14.5px] text-slate-500 sm:text-[#0B3558] sm:w-1/4 mt-2 sm:mt-0 opacity-80 sm:opacity-100">
                       1 host | 0 non-hosts
                     </div>
 
-                    {/* Actions */}
-                    <div className="w-[120px] flex justify-end">
+                    {/* Desktop Actions */}
+                    <div className="w-[120px] justify-end hidden sm:flex">
                       <button className="flex items-center gap-1.5 text-[14.5px] font-semibold text-slate-400 hover:text-[#0B3558] transition">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

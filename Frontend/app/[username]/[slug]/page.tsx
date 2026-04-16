@@ -127,8 +127,8 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-4">
-      <div className={`relative flex w-full max-w-[1060px] flex-col overflow-hidden rounded-lg bg-white shadow-[0_1px_8px_0_rgba(0,0,0,0.08)] md:flex-row ${!message ? 'md:h-[650px]' : 'md:min-h-[500px]'}`}>
+    <main className="min-h-screen bg-[#F3F4F5] flex items-center justify-center p-0 md:p-4">
+      <div className={`relative flex w-full max-w-[1060px] flex-col overflow-hidden md:rounded-lg bg-white md:shadow-[0_1px_8px_0_rgba(0,0,0,0.08)] md:flex-row min-h-screen md:min-h-0 ${!message ? 'md:h-[650px]' : 'md:min-h-[500px]'}`}>
         
         {/* Success Overlay Check */}
         {message ? (
@@ -139,7 +139,7 @@ export default function PublicBookingPage({ params }: PublicBookingPageProps) {
         <BookingSidebar payload={payload} selectedSlot={selectedSlot} />
 
         {/* Right Content */}
-        <div className="flex w-full flex-col p-8 md:w-7/12">
+        <div className="flex w-full flex-col p-4 md:p-8 md:w-7/12 bg-white pb-12 md:pb-8">
           {!selectedSlot ? (
             <BookingCalendar
               currentMonth={currentMonth}

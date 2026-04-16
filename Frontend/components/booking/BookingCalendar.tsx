@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { format, isSameDay, isToday, isBefore, startOfDay } from "date-fns";
 import { BookingCalendarProps } from "./utils/BookingCalendar.types";
 
@@ -10,12 +11,25 @@ export default function BookingCalendar({
   payload,
   setSelectedSlot,
 }: BookingCalendarProps) {
+  const timeSlotsRef = useRef<HTMLDivElement>(null);
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    
+    // Auto-scroll to time slots on mobile after a short delay to allow render
+    setTimeout(() => {
+      if (window.innerWidth < 768 && timeSlotsRef.current) {
+        timeSlotsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
   return (
     <div className="w-full">
-      <h2 className="text-xl font-bold text-[#1A1A1A] mb-6">Select Date & Time</h2>
+      <h2 className="text-[22px] md:text-xl font-bold text-[#1A1A1A] mb-4 md:mb-6 px-1 md:px-0">Select Date & Time</h2>
       
-      <div className="flex justify-between">
-        <div>
+      <div className="flex flex-col md:flex-row md:justify-between gap-6 md:gap-0">
+        <div className="w-full md:w-auto">
           {/* Calendar Header */}
           <div className="flex items-center justify-center gap-8 mb-6">
             <button onClick={() => changeMonth(-1)} className="p-2 text-slate-400 hover:text-slate-600 transition">
@@ -52,7 +66,7 @@ export default function BookingCalendar({
                   <button
                     type="button"
                     disabled={isDisabled}
-                    onClick={() => setSelectedDate(dayObj.date)}
+                    onClick={() => handleDateSelect(dayObj.date)}
                     className={`w-11 h-11 flex items-center justify-center rounded-full transition-all relative ${
                       !isCurrent ? "text-transparent cursor-default" :
                       isPast ? "text-slate-300 fontal cursor-default" :
@@ -87,8 +101,11 @@ export default function BookingCalendar({
         </div>
 
         {/* Time slots column */}
-        <div className="flex flex-col pb-4 ml-[70px] overflow-y-auto max-h-[480px] w-[210px] mt-[-3px]">
-          <p className="text-[17px] text-[#1A1A1A] mb-[20px]">
+        <div 
+          ref={timeSlotsRef}
+          className="flex flex-col pb-4 md:ml-[70px] overflow-y-auto max-h-[300px] md:max-h-[480px] w-full md:w-[210px] mt-4 md:mt-[-3px] scroll-mt-6"
+        >
+          <p className="text-[17px] text-[#1A1A1A] mb-[20px] font-bold">
             {format(selectedDate, "EEEE, MMMM d")}
           </p>
           

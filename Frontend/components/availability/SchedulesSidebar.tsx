@@ -8,7 +8,7 @@ export default function SchedulesSidebar({
   onDelete,
 }: SchedulesSidebarProps) {
   return (
-    <div className="w-full md:w-64 border-r border-slate-200 bg-slate-50 p-4 shrink-0 overflow-y-auto">
+    <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-4 shrink-0 overflow-y-auto max-h-[30vh] md:max-h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Schedules</h3>
         <button

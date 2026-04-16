@@ -66,10 +66,10 @@ export default function PublicUserPage({ params }: PublicUserPageProps) {
 
   return (
     <main className="min-h-screen bg-[#F3F4F5]">
-      <div className="mx-auto max-w-[1040px] pt-12 px-4 pb-12">
+      <div className="mx-auto max-w-[1040px] pt-8 md:pt-12 px-4 md:px-8 pb-12">
         <UserHeader name={payload.user.name} />
 
-        <div className="grid gap-[22px] md:grid-cols-2 lg:grid-cols-3 mt-10">
+        <div className="grid gap-4 md:gap-[22px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6 md:mt-10">
           {payload.eventTypes.length > 0 ? (
             payload.eventTypes.map((event) => (
               <EventTypeCard key={event.id} event={event} username={payload.user.slug} />

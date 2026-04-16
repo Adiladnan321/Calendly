@@ -5,12 +5,13 @@ export default function MeetingsTabs({
   setTab,
   dateRange,
   setDateRange,
-}: MeetingsTabsProps) {
+  onExport,
+}: MeetingsTabsProps & { onExport?: () => void }) {
   const hasDateRange = Boolean(dateRange.start || dateRange.end);
 
   return (
-    <div className="flex flex-wrap items-end justify-between border-b border-slate-200 mt-2 gap-4 bg-white px-6">
-      <div className="flex flex-wrap items-center gap-6 text-[15px] font-semibold text-slate-600">
+    <div className="flex flex-col sm:flex-row flex-wrap sm:items-end justify-between border-b border-slate-200 mt-2 gap-4 bg-white px-4 sm:px-6">
+      <div className="flex flex-row overflow-x-auto custom-scrollbar flex-nowrap items-center gap-6 text-[15px] font-semibold text-slate-600 w-full sm:w-auto border-b sm:border-b-0 border-slate-100 sm:pb-0 mb-2 sm:mb-0">
         <button
           type="button"
           onClick={() => {
@@ -69,7 +70,7 @@ export default function MeetingsTabs({
           </button>
 
           {tab === "date_range" && (
-            <div className="absolute left-0 top-full z-20 mt-2 w-[340px] rounded-xl border border-slate-200 bg-white p-5 shadow-xl ring-1 ring-slate-900/5">
+            <div className="absolute left-0 top-full z-20 mt-2 w-[calc(100vw-2rem)] sm:w-[340px] max-w-[340px] rounded-xl border border-slate-200 bg-white p-5 shadow-xl ring-1 ring-slate-900/5">
               <h4 className="text-[15px] font-bold text-slate-800 mb-4">Filter by Date</h4>
               <div className="flex flex-col gap-4">
                 <div>
@@ -123,8 +124,11 @@ export default function MeetingsTabs({
         </div>
       </div>
 
-      <div className="pb-4">
-        <button className="group flex items-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-2 text-[14.5px] font-semibold text-[#0B3558] hover:bg-slate-50 transition shadow-sm active:scale-95">
+      <div className="pb-4 w-full sm:w-auto flex justify-end">
+        <button 
+          onClick={onExport}
+          className="group flex items-center justify-center gap-2 w-full sm:w-auto rounded-full border border-slate-300 bg-white px-5 py-2 text-[14.5px] font-semibold text-[#0B3558] hover:bg-slate-50 transition shadow-sm active:scale-95"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

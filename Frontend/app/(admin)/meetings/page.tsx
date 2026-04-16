@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { request } from "@/lib/api";
 import type { Booking } from "@/lib/types";
 import { isAfter, isBefore, isSameDay, parseISO, format } from "date-fns";
@@ -9,29 +10,13 @@ import MeetingsTabs from "@/components/meetings/MeetingsTabs";
 import MeetingsList from "@/components/meetings/MeetingsList";
 
 export default function MeetingsPage() {
-  const [data, setData] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: data = [], isLoading: loading, error } = useQuery<Booking[]>({
+    queryKey: ["bookings"],
+    queryFn: () => request<Booking[]>("/api/bookings"),
+  });
 
   const [tab, setTab] = useState<"upcoming" | "past" | "date_range">("upcoming");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-
-  async function loadMeetings(): Promise<void> {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await request<Booking[]>("/api/bookings");
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load meetings");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void loadMeetings();
-  }, []);
 
   const now = new Date();
   const filterList = () => {
@@ -66,8 +51,34 @@ export default function MeetingsPage() {
     a[0].localeCompare(b[0]) * sortOrder
   );
 
+  const handleExport = () => {
+    if (!filtered.length) return;
+
+    const headers = ["Invitee Name", "Invitee Email", "Event Type", "Start Time", "End Time", "Status"];
+    const rows = filtered.map((booking) => [
+      booking.inviteeName,
+      booking.inviteeEmail,
+      booking.eventType.name,
+      format(parseISO(booking.startTime), "yyyy-MM-dd HH:mm:ss"),
+      format(parseISO(booking.endTime), "yyyy-MM-dd HH:mm:ss"),
+      isAfter(parseISO(booking.endTime), new Date()) ? "Upcoming" : "Past",
+    ]);
+
+    const csvContent =
+      [headers.join(","), ...rows.map((row) => row.map((cell) => `"${cell}"`).join(","))].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `calendly_export_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (error) {
-    return <div className="p-4 text-red-600 bg-red-50 rounded-xl max-w-[1000px] mx-auto">{error}</div>;
+    return <div className="p-4 text-red-600 bg-red-50 rounded-xl max-w-[1000px] mx-auto">{error instanceof Error ? error.message : "Could not load meetings"}</div>;
   }
 
   if (loading) {
@@ -86,6 +97,7 @@ export default function MeetingsPage() {
           setTab={setTab}
           dateRange={dateRange}
           setDateRange={setDateRange}
+          onExport={handleExport}
         />
 
         <MeetingsList groupedBookings={groupedBookings} />

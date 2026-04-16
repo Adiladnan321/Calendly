@@ -14,8 +14,8 @@ export default function AvailabilityEditor({
   onSetDefault,
 }: AvailabilityEditorProps) {
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-20 px-8">
-      <header className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-6 pb-6 border-b border-slate-200">
+    <div className="flex-1 flex flex-col pt-4 md:pt-6 pb-20 px-4 md:px-8 overflow-y-auto">
+      <header className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6 pb-4 md:pb-6 border-b border-slate-200">
         <div className="flex-1">
           <input
             type="text"
@@ -30,7 +30,7 @@ export default function AvailabilityEditor({
           </p>
         </div>
 
-        <div className="flex shrink-0 gap-3 text-sm font-bold">
+        <div className="flex flex-wrap md:flex-nowrap shrink-0 gap-3 text-sm font-bold">
           {!schedule.isDefault && (
             <button
               onClick={() => onSetDefault && void onSetDefault()}
@@ -56,7 +56,7 @@ export default function AvailabilityEditor({
 
       <div className="space-y-4">
         {form.map((day, idx) => (
-          <div key={days[idx]} className="grid items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 py-2 hover:border-slate-300 transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] md:grid-cols-[200px_1fr_1fr] lg:w-4/5">
+          <div key={days[idx]} className="flex flex-col md:grid md:items-center md:justify-between gap-3 md:gap-4 rounded-xl border border-slate-200 bg-white p-4 py-4 md:py-3 hover:border-slate-300 transition shadow-[0_1px_2px_rgba(0,0,0,0.02)] md:grid-cols-[200px_1fr_auto] w-full">
             <label className="flex cursor-pointer select-none items-center gap-3 text-[14.5px] font-bold text-slate-700">
               <input
                 type="checkbox"
@@ -75,7 +75,7 @@ export default function AvailabilityEditor({
 
             {day.enabled ? (
               <>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 ">
                   <input
                     type="time"
                     value={day.startTime}
@@ -104,7 +104,7 @@ export default function AvailabilityEditor({
                 </div>
               </>
             ) : (
-              <div className="col-span-2 text-[14px] font-medium text-slate-400">Unavailable</div>
+              <div className="md:col-span-2 text-[14px] font-medium text-slate-400">Unavailable</div>
             )}
           </div>
         ))}

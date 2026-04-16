@@ -44,8 +44,9 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[260px] flex-col border-r border-slate-200 bg-white md:fixed md:inset-y-0 md:left-0 md:z-20 md:flex pb-6 overflow-y-auto custom-scrollbar">
-      {/* Header Logo & Collapse */}
+    <>
+      <aside className="hidden w-[260px] flex-col border-r border-slate-200 bg-white md:fixed md:inset-y-0 md:left-0 md:z-20 md:flex pb-6 overflow-y-auto custom-scrollbar">
+        {/* Header Logo & Collapse */}
       <div className="flex h-[72px] items-center justify-between px-6 pt-2">
         <div className="flex items-center gap-2">
           {/* Logo Icon */}
@@ -124,6 +125,43 @@ export function Sidebar() {
           </svg>
         </button>
       </div>
-    </aside>
+      </aside>
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-slate-200 bg-white px-2 py-2 pb-safe md:hidden shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
+        {topNavItems.map((item) => {
+          const isActive = pathname?.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 rounded-xl transition ${
+                isActive ? "text-[#0B5FFF]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+              }`}
+            >
+              <div className={`p-1.5 rounded-full ${isActive ? 'bg-blue-50' : 'bg-transparent'}`}>
+                {item.icon}
+              </div>
+              <span className={`text-[11px] font-medium leading-none ${isActive ? "font-bold text-[#0B5FFF]" : ""}`}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+        {/* Profile/Menu Tab Space */}
+        <button
+          type="button"
+          className="flex flex-col items-center justify-center gap-1 flex-1 py-1 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition"
+        >
+          <div className="p-1.5 rounded-full bg-transparent">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <span className="text-[11px] font-medium leading-none">Profile</span>
+        </button>
+      </nav>
+    </>
   );
 }
